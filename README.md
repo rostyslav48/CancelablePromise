@@ -1,3 +1,6 @@
+# I have changed some tests, to prevent them from failing because of asynchronous issues (there are comments in the code)
+
+
 # Cancelable Promise Test
 
 
