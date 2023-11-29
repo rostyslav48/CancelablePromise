@@ -1,7 +1,6 @@
 const PENDING = 'pending'
 const FULFILLED = 'fulfilled'
 const REJECTED = 'rejected'
-const CANCELED = 'canceled'
 
 class CancelablePromise {
   constructor(executor) {
@@ -13,7 +12,7 @@ class CancelablePromise {
     this._rejectionQueue = []
     this._activePromises = [this]
     this._state = PENDING
-    this._error
+    this.rejects
     this.resolves
     this.isCanceled = false
 
@@ -53,7 +52,7 @@ class CancelablePromise {
 
       let valueToReturn
       try {
-        valueToReturn = rejection.handler(this._error)
+        valueToReturn = rejection.handler(this.rejects)
       } catch(error) {
         rejection.promise._reject(error)
       }
@@ -72,27 +71,27 @@ class CancelablePromise {
     if (this._state === PENDING) {
       this.resolves = value
       this._state = FULFILLED
-  
+
       this._runResolutionHandlers()
     }
   }
 
   _reject(error) {
     if (this._state === PENDING) {
-      this._error = error
+      this.rejects = error
       this._state = REJECTED
   
       this._runRejectionHandlers()
 
       while(this._resolutionQueue.length > 0) {
         const resolution = this._resolutionQueue.shift();
-        resolution.promise._reject(this._error)
+        resolution.promise._reject(this.rejects)
       }
     }
   }
 
-  then(resolutionHandler, rejectionHandler) {
-    if(resolutionHandler && typeof resolutionHandler !== 'function') {
+  then(resolutionHandler = value => value, rejectionHandler) {
+    if(typeof resolutionHandler !== 'function') {
       throw new Error ('The argument should be a function')
     }
 
@@ -119,7 +118,7 @@ class CancelablePromise {
     }
 
     if (this._state === REJECTED) {
-      newPromise._reject(this._error)
+      newPromise._reject(this.rejects)
     }
 
     return newPromise
@@ -144,14 +143,10 @@ class CancelablePromise {
   }
 
   cancel() {
-    this._state = CANCELED
-    this.isCanceled = true
-
     while(this._activePromises.length > 0) {
       const promise = this._activePromises.shift();
       promise.isCanceled = true
-      promise._state = CANCELED
-      promise._reject()
+      promise._reject({ isCanceled: true })
     }
   }
 }
