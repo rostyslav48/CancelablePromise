@@ -2,7 +2,7 @@
 // Develop a class CancelablePromise that behaves similarly to the native Promise class in JavaScript
 // but can cancel the entire promise chain from execution.
 
-const CancelablePromise = require(`./cancelable-promise`)
+const {CancelablePromise} = require(`./cancelable-promise`)
 
 const { describe, expect, test } = global
 
