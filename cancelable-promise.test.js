@@ -95,20 +95,15 @@ describe('CancelablePromise test', () => {
     test('should cancel promise', async () => {
       let value = 0
       const p1 = new CancelablePromise(resolve => setTimeout(() => resolve(1), 100))
-      const p2 = p1.then(v => value = v).catch()
-      const p3 = p1.then(() => void 0).catch()
+      const p2 = p1.then(v => value = v)
+      const p3 = p1.then(() => void 0)
 
       await getPromiseState(p3, state => expect(state).toBe('pending'))
       expect(typeof p2.cancel).toBe('function')
 
-      // Tests want rejects, but they are not ready for them 
-      // (reject throw errors and there isn't any error catching function)
-
-      // setTimeout(() => {
-      //   p2.cancel()
-      // })
-
-      p2.cancel()
+      setTimeout(() => {
+        p2.cancel()
+      })
 
       await expect(p1).rejects.toEqual({ isCanceled: true })
       await expect(p2).rejects.toEqual({ isCanceled: true })
